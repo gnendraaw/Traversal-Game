@@ -8,11 +8,13 @@ public class InputManager : MonoBehaviour
     public Action<bool> OnSprintInput;
     public Action OnJumpInput;
     public Action OnClimbInput;
+    public Action OnCancelClimbInput;
 
     private InputAction _moveAction;
     private InputAction _sprintAction;
     private InputAction _jumpAction;
     private InputAction _climbAction;
+    private InputAction _cancelClimbAction;
 
     private void Start()
     {
@@ -20,15 +22,14 @@ public class InputManager : MonoBehaviour
         {
             _moveAction = InputSystem.actions.FindAction("Player/Move");
             _moveAction.Enable();
-            
             _sprintAction = InputSystem.actions.FindAction("Player/Sprint");
             _sprintAction.Enable();
-            
             _jumpAction = InputSystem.actions.FindAction("Player/Jump");
             _jumpAction.Enable();
-            
             _climbAction = InputSystem.actions.FindAction("Player/Climb");
             _climbAction.Enable();
+            _cancelClimbAction = InputSystem.actions.FindAction("Player/CancelClimb");
+            _cancelClimbAction.Enable();
         }
     }
 
@@ -38,6 +39,7 @@ public class InputManager : MonoBehaviour
         CheckSprintInput();
         CheckJumpInput();
         CheckClimbInput();
+        CheckCancelClimbInput();
     }
 
     private void CheckMovementInput()
@@ -62,5 +64,11 @@ public class InputManager : MonoBehaviour
     {
         bool isClimbInputPerformed = _climbAction.WasPerformedThisFrame();
         if (isClimbInputPerformed) OnClimbInput?.Invoke();
+    }
+
+    private void CheckCancelClimbInput()
+    {
+        bool isCancelClimbInputPerformed = _cancelClimbAction.WasPerformedThisFrame();
+        if (isCancelClimbInputPerformed) OnCancelClimbInput?.Invoke();
     }
 }

@@ -1349,11 +1349,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   _input: {fileID: 166451018}
-  _rotationSmoothTime: 0.1
   _sprintSpeed: 600
   _walkSprintTransition: 30
   _walkSpeed: 350
   _jumpForce: 10000
+  _rotationSmoothTime: 0.1
   _groundDetector: {fileID: 1701759408}
   _groundLayer:
     serializedVersion: 2
@@ -1362,6 +1362,12 @@ MonoBehaviour:
   _upperStepOffset: {x: 0, y: 0.3, z: 0.3}
   _stepCheckDistance: 0.1
   _stepForce: 400
+  _climbDetector: {fileID: 283945466}
+  _climbCheckDistance: 1
+  _climbableLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  _climbOffset: {x: 0, y: 0, z: 0.16}
 --- !u!136 &919132148556680942
 CapsuleCollider:
   m_ObjectHideFlags: 0

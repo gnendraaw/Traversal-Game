@@ -49,6 +49,7 @@ public class PlayerMovement : MonoBehaviour
         _input.OnSprintInput += Sprint;
         _input.OnJumpInput += Jump;
         _input.OnClimbInput += StartClimb;
+        _input.OnCancelClimbInput += CancelClimb;
     }
 
     private void Update()
@@ -140,11 +141,21 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    private void CancelClimb()
+    {
+        if (_stance != PlayerStance.Climb) return;
+
+        _stance = PlayerStance.Stand;
+        _rigidbody.useGravity = true;
+        transform.position -= transform.forward;
+    }
+
     private void OnDestroy()
     {
         _input.OnMoveInput -= Move;
         _input.OnSprintInput -= Sprint;
         _input.OnJumpInput -= Jump;
         _input.OnClimbInput -= StartClimb;
+        _input.OnCancelClimbInput -= CancelClimb;
     }
 }
