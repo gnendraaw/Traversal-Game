@@ -1362,6 +1362,7 @@ MonoBehaviour:
   _upperStepOffset: {x: 0, y: 0.3, z: 0.3}
   _stepCheckDistance: 0.1
   _stepForce: 400
+  _climbSpeed: 30
   _climbDetector: {fileID: 283945466}
   _climbCheckDistance: 1
   _climbableLayer:

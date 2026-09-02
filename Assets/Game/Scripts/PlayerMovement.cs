@@ -23,6 +23,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _stepForce = 400f;
 
     [Header("Climb Detection")]
+    [SerializeField] private float _climbSpeed;
     [SerializeField] private Transform _climbDetector;
     [SerializeField] private float _climbCheckDistance = 0.1f;
     [SerializeField] private LayerMask _climbableLayer;
@@ -72,13 +73,11 @@ public class PlayerMovement : MonoBehaviour
             transform.forward,
             _stepCheckDistance
         );
-        
         bool isHittingUpperStep = Physics.Raycast(
             _groundDetector.position + _upperStepOffset,
             transform.forward,
             _stepCheckDistance
         );
-        
         Debug.Log($"IsHittingLowerStep: {isHittingLowerStep}");
         Debug.Log($"IsHittingUpperStep: {isHittingUpperStep}");
 
@@ -88,21 +87,36 @@ public class PlayerMovement : MonoBehaviour
 
     private void Move(Vector2 inputAxis)
     {
-        if (inputAxis.magnitude >= 0.1f)
-        {
-            float rotationAngle = Mathf.Atan2(inputAxis.x, inputAxis.y) * Mathf.Rad2Deg;
-            float smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, rotationAngle, ref _rotationSmoothVelocity, _rotationSmoothTime);
-            transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
+        bool isClimbing = _stance == PlayerStance.Climb;
+        bool isStanding = _stance == PlayerStance.Stand;
+        Vector3 moveDirection = Vector3.zero;
 
-            Vector3 moveDirection = Quaternion.Euler(0f, rotationAngle, 0f) * Vector3.forward;
-            _rigidbody.AddForce(moveDirection * (_speed * Time.deltaTime));
+        if (isStanding)
+        {
+            if (inputAxis.magnitude >= 0.1f)
+            {
+                float rotationAngle = Mathf.Atan2(inputAxis.x, inputAxis.y) * Mathf.Rad2Deg;
+                float smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, rotationAngle, ref _rotationSmoothVelocity, _rotationSmoothTime);
+                transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
+
+                moveDirection = Quaternion.Euler(0f, rotationAngle, 0f) * Vector3.forward;
+                _rigidbody.AddForce(moveDirection * (_speed * Time.deltaTime));
+            }
+            return;
+        }
+
+        if (isClimbing)
+        {
+            Vector3 horizontal = inputAxis.x * transform.right;
+            Vector3 vertical = inputAxis.y * transform.up;
+            moveDirection = horizontal + vertical;
+            _rigidbody.AddForce(moveDirection * Time.deltaTime * _climbSpeed);
         }
     }
 
     private void Sprint(bool isSprinting)
     {
         Debug.Log($"Is Sprinting: {isSprinting}");
-        
         if (isSprinting)
         {
             if (_speed < _sprintSpeed) _speed += _walkSprintTransition * Time.deltaTime;
