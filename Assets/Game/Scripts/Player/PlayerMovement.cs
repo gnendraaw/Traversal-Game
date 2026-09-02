@@ -40,6 +40,8 @@ public class PlayerMovement : MonoBehaviour
     private float _rotationSmoothVelocity;
 
     private Rigidbody _rigidbody;
+    private Vector3 _moveDirection = Vector3.zero;
+    private Vector2 _cachedMoveInput = Vector2.zero;
 
     private void Awake()
     {
@@ -52,7 +54,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Start()
     {
-        _input.OnMoveInput += Move;
+        _input.OnMoveInput += HandleMoveInput;
         _input.OnSprintInput += Sprint;
         _input.OnJumpInput += Jump;
         _input.OnClimbInput += StartClimb;
@@ -65,10 +67,29 @@ public class PlayerMovement : MonoBehaviour
         CheckStep();
     }
 
+    private void FixedUpdate()
+    {
+        Move(_cachedMoveInput);
+        SyncBodyRotateWithCamera();
+    }
+
+    private void SyncBodyRotateWithCamera()
+    {
+        if (_cameraManager.State != CameraState.FirstPerson) return;
+
+        float panAxisValue = _cameraManager.GetPanTiltAxis();
+        transform.rotation = Quaternion.Euler(0f, panAxisValue, 0f);
+    }
+
     private void HideAndLockCursor()
     {
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
+    }
+
+    private void HandleMoveInput(Vector2 input)
+    {
+        _cachedMoveInput = input;
     }
 
     private void CheckIsGrounded()
@@ -90,8 +111,6 @@ public class PlayerMovement : MonoBehaviour
             transform.forward,
             _stepCheckDistance
         );
-        Debug.Log($"IsHittingLowerStep: {isHittingLowerStep}");
-        Debug.Log($"IsHittingUpperStep: {isHittingUpperStep}");
 
         if (isHittingLowerStep && !isHittingUpperStep)
             _rigidbody.AddForce(0f, _stepForce, 0);
@@ -115,7 +134,8 @@ public class PlayerMovement : MonoBehaviour
                         transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
 
                         moveDirection = Quaternion.Euler(0f, rotationAngle, 0f) * Vector3.forward;
-                        _rigidbody.AddForce(moveDirection * (_speed * Time.deltaTime));
+
+                        _rigidbody.AddForce(moveDirection * _speed * Time.fixedDeltaTime);
                     }
 
                     break;
@@ -123,13 +143,11 @@ public class PlayerMovement : MonoBehaviour
                 case CameraState.FirstPerson:
                     if (inputAxis.magnitude >= 0.1f)
                     {
-                        // FIXME: After rotating player's y angle, the FirstPersonCamera's Pan
-                        // value didn't reset back to 0f. causing weird panning limit.
-                        transform.rotation = Quaternion.Euler(0f, _cameraTransform.eulerAngles.y, 0f);
                         Vector3 verticalDirection = inputAxis.y * transform.forward;
                         Vector3 horizontalDirection = inputAxis.x * transform.right;
                         moveDirection = verticalDirection + horizontalDirection;
-                        _rigidbody.AddForce(moveDirection * (Time.deltaTime * _speed));
+
+                        _rigidbody.AddForce(moveDirection * _speed * Time.fixedDeltaTime);
                     }
 
                     break;
@@ -142,20 +160,26 @@ public class PlayerMovement : MonoBehaviour
             Vector3 horizontal = inputAxis.x * transform.right;
             Vector3 vertical = inputAxis.y * transform.up;
             moveDirection = horizontal + vertical;
+
             _rigidbody.AddForce(moveDirection * Time.deltaTime * _climbSpeed);
         }
     }
 
     private void Sprint(bool isSprinting)
     {
-        Debug.Log($"Is Sprinting: {isSprinting}");
         if (isSprinting)
         {
-            if (_speed < _sprintSpeed) _speed += _walkSprintTransition * Time.deltaTime;
+            if (_speed < _sprintSpeed)
+            {
+                _speed = Mathf.Lerp(_speed, _sprintSpeed, _walkSprintTransition * Time.deltaTime);
+            }
         }
         else
         {
-            if (_speed > _walkSpeed) _speed -= _walkSprintTransition * Time.deltaTime;
+            if (_speed > _walkSpeed)
+            {
+                _speed = Mathf.Lerp(_speed, _walkSpeed, _walkSprintTransition * Time.deltaTime);
+            }
         }
     }
 
@@ -180,6 +204,7 @@ public class PlayerMovement : MonoBehaviour
         bool isNotClimbing = _stance != PlayerStance.Climb;
         if (isInFrontOfClimbWall && isNotClimbing)
         {
+            _cameraManager.SetThirdPersonCamFOV(70f);
             Vector3 offset = (transform.forward * _climbOffset.z) + (Vector3.up * _climbOffset.y);
             _stance = PlayerStance.Climb;
             _rigidbody.useGravity = false;
@@ -191,6 +216,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (_stance != PlayerStance.Climb) return;
 
+        _cameraManager.SetThirdPersonCamFOV(40f);
         _stance = PlayerStance.Stand;
         _rigidbody.useGravity = true;
         transform.position -= transform.forward;
@@ -198,7 +224,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnDestroy()
     {
-        _input.OnMoveInput -= Move;
+        _input.OnMoveInput -= HandleMoveInput;
         _input.OnSprintInput -= Sprint;
         _input.OnJumpInput -= Jump;
         _input.OnClimbInput -= StartClimb;

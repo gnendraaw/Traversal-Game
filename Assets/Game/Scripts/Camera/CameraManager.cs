@@ -10,25 +10,35 @@ public class CameraManager : MonoBehaviour
 
     [Header("Camera")]
     [SerializeField] private CinemachineCamera _tpsCamera;
-    [SerializeField] private CinemachineCamera _fpsCamera;
+    [SerializeField] private CinemachinePanTilt _fpsCamera;
 
     private void Start()
     {
-	_inputManager.OnSwitchCameraInput += SwitchCamera;
+        _inputManager.OnSwitchCameraInput += SwitchCamera;
     }
 
     private void SwitchCamera()
     {
-	State = State == CameraState.FirstPerson ? CameraState.ThirdPerson : CameraState.FirstPerson;
+        State = State == CameraState.FirstPerson ? CameraState.ThirdPerson : CameraState.FirstPerson;
 
-	_fpsCamera.gameObject.SetActive(InFirstPersonView());
-	_tpsCamera.gameObject.SetActive(!InFirstPersonView());
+        _fpsCamera.gameObject.SetActive(InFirstPersonView());
+        _tpsCamera.gameObject.SetActive(!InFirstPersonView());
     }
 
     private bool InFirstPersonView() => State == CameraState.FirstPerson;
 
+    public void SetThirdPersonCamFOV(float value = 40)
+    {
+        _tpsCamera.Lens.FieldOfView = value;
+    }
+
+    public float GetPanTiltAxis()
+    {
+        return _fpsCamera.PanAxis.Value;
+    }
+
     private void OnDestroy()
     {
-	_inputManager.OnSwitchCameraInput -= SwitchCamera;
+        _inputManager.OnSwitchCameraInput -= SwitchCamera;
     }
 }
