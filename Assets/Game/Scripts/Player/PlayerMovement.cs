@@ -4,6 +4,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("Cinemachine Camera")]
     [SerializeField] private Transform _cameraTransform;
+    [SerializeField] private CameraManager _cameraManager;
 
     [Header("Inputs")]
     [SerializeField] private InputManager _input;
@@ -104,14 +105,34 @@ public class PlayerMovement : MonoBehaviour
 
         if (isStanding)
         {
-            if (inputAxis.magnitude >= 0.1f)
+            switch (_cameraManager.State)
             {
-                float rotationAngle = Mathf.Atan2(inputAxis.x, inputAxis.y) * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
-                float smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, rotationAngle, ref _rotationSmoothVelocity, _rotationSmoothTime);
-                transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
+                case CameraState.ThirdPerson:
+                    if (inputAxis.magnitude >= 0.1f)
+                    {
+                        float rotationAngle = Mathf.Atan2(inputAxis.x, inputAxis.y) * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
+                        float smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, rotationAngle, ref _rotationSmoothVelocity, _rotationSmoothTime);
+                        transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
 
-                moveDirection = Quaternion.Euler(0f, rotationAngle, 0f) * Vector3.forward;
-                _rigidbody.AddForce(moveDirection * (_speed * Time.deltaTime));
+                        moveDirection = Quaternion.Euler(0f, rotationAngle, 0f) * Vector3.forward;
+                        _rigidbody.AddForce(moveDirection * (_speed * Time.deltaTime));
+                    }
+
+                    break;
+
+                case CameraState.FirstPerson:
+                    if (inputAxis.magnitude >= 0.1f)
+                    {
+                        // FIXME: After rotating player's y angle, the FirstPersonCamera's Pan
+                        // value didn't reset back to 0f. causing weird panning limit.
+                        transform.rotation = Quaternion.Euler(0f, _cameraTransform.eulerAngles.y, 0f);
+                        Vector3 verticalDirection = inputAxis.y * transform.forward;
+                        Vector3 horizontalDirection = inputAxis.x * transform.right;
+                        moveDirection = verticalDirection + horizontalDirection;
+                        _rigidbody.AddForce(moveDirection * (Time.deltaTime * _speed));
+                    }
+
+                    break;
             }
             return;
         }

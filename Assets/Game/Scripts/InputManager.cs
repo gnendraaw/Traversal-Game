@@ -9,12 +9,14 @@ public class InputManager : MonoBehaviour
     public Action OnJumpInput;
     public Action OnClimbInput;
     public Action OnCancelClimbInput;
+    public Action OnSwitchCameraInput;
 
     private InputAction _moveAction;
     private InputAction _sprintAction;
     private InputAction _jumpAction;
     private InputAction _climbAction;
     private InputAction _cancelClimbAction;
+    private InputAction _switchCameraAction;
 
     private void Start()
     {
@@ -30,6 +32,9 @@ public class InputManager : MonoBehaviour
             _climbAction.Enable();
             _cancelClimbAction = InputSystem.actions.FindAction("Player/CancelClimb");
             _cancelClimbAction.Enable();
+
+            _switchCameraAction = InputSystem.actions.FindAction("Player/SwitchCamera");
+            _switchCameraAction.Enable();
         }
     }
 
@@ -40,6 +45,7 @@ public class InputManager : MonoBehaviour
         CheckJumpInput();
         CheckClimbInput();
         CheckCancelClimbInput();
+        CheckSwitchCameraInput();
     }
 
     private void CheckMovementInput()
@@ -70,5 +76,11 @@ public class InputManager : MonoBehaviour
     {
         bool isCancelClimbInputPerformed = _cancelClimbAction.WasPerformedThisFrame();
         if (isCancelClimbInputPerformed) OnCancelClimbInput?.Invoke();
+    }
+
+    private void CheckSwitchCameraInput()
+    {
+        bool isSwitchCameraInputPerformed = _switchCameraAction.WasPerformedThisFrame();
+        if (isSwitchCameraInputPerformed) OnSwitchCameraInput?.Invoke();
     }
 }
