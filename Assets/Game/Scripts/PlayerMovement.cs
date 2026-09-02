@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [Header("Cinemachine Camera")]
+    [SerializeField] private Transform _cameraTransform;
+
     [Header("Inputs")]
     [SerializeField] private InputManager _input;
 
@@ -39,6 +42,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void Awake()
     {
+        HideAndLockCursor();
+
         _rigidbody = GetComponent<Rigidbody>();
         _speed = _walkSpeed;
         _stance = PlayerStance.Stand;
@@ -57,6 +62,12 @@ public class PlayerMovement : MonoBehaviour
     {
         CheckIsGrounded();
         CheckStep();
+    }
+
+    private void HideAndLockCursor()
+    {
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     private void CheckIsGrounded()
@@ -95,7 +106,7 @@ public class PlayerMovement : MonoBehaviour
         {
             if (inputAxis.magnitude >= 0.1f)
             {
-                float rotationAngle = Mathf.Atan2(inputAxis.x, inputAxis.y) * Mathf.Rad2Deg;
+                float rotationAngle = Mathf.Atan2(inputAxis.x, inputAxis.y) * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
                 float smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, rotationAngle, ref _rotationSmoothVelocity, _rotationSmoothTime);
                 transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
 
