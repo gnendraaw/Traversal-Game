@@ -2,13 +2,15 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("Cinemachine Camera")] [SerializeField]
+    [Header("Cinemachine Camera")]
+    [SerializeField]
     private Transform _cameraTransform;
 
     [SerializeField] private CameraManager _cameraManager;
-    [Header("Inputs")] [SerializeField] private InputManager _input;
+    [Header("Inputs")][SerializeField] private InputManager _input;
 
-    [Header("Walk & Sprint")] [SerializeField]
+    [Header("Walk & Sprint")]
+    [SerializeField]
     private float _sprintSpeed;
 
     [SerializeField] private float _walkSprintTransition;
@@ -16,19 +18,22 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _jumpForce = 1000f;
     [SerializeField] private float _rotationSmoothTime = 0.1f;
 
-    [Header("Ground Detection")] [SerializeField]
+    [Header("Ground Detection")]
+    [SerializeField]
     private Transform _groundDetector;
 
     [SerializeField] private LayerMask _groundLayer;
     [SerializeField] private float _groundCheckRadius = 0.1f;
 
-    [Header("Step Detection")] [SerializeField]
+    [Header("Step Detection")]
+    [SerializeField]
     private Vector3 _upperStepOffset = Vector3.zero;
     [SerializeField] private float _maxStepHeight;
     [SerializeField] private float _stepCheckDistance = 0.1f;
     [SerializeField] private float _stepForce = 400f;
 
-    [Header("Climb Detection")] [SerializeField]
+    [Header("Climb Detection")]
+    [SerializeField]
     private float _climbSpeed;
 
     [SerializeField] private Transform _climbDetector;
@@ -38,7 +43,6 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Crouch")]
     [SerializeField] private float _crouchSpeed;
-    
     private PlayerStance _stance;
     private Rigidbody _rigidbody;
     private Vector2 _cachedMoveInput = Vector2.zero;
@@ -115,18 +119,13 @@ public class PlayerMovement : MonoBehaviour
     {
         bool notMoving = _cachedMoveInput.sqrMagnitude <= 0.01f;
         if (notMoving) return;
-    
         Vector3 lowerRayOrigin = _groundDetector.position;
         Vector3 upperRayOrigin = _groundDetector.position + _upperStepOffset;
-    
         Vector3 forwardDirection = transform.forward;
-    
         if (!Physics.Raycast(lowerRayOrigin, forwardDirection, out RaycastHit hit, _stepCheckDistance)) return;
         if (Physics.Raycast(upperRayOrigin, forwardDirection, _stepCheckDistance)) return;
-        
         Vector3 downRayOrigin = upperRayOrigin + (forwardDirection * _stepCheckDistance);
         if (!Physics.Raycast(downRayOrigin, Vector3.down, _upperStepOffset.y)) return;
-        
         float stepHeightDifference = hit.point.y - lowerRayOrigin.y;
         Vector3 targetPosition = _rigidbody.position + new Vector3(0f, stepHeightDifference + 0.1f, 0f);
         _rigidbody.MovePosition(targetPosition);
@@ -134,45 +133,47 @@ public class PlayerMovement : MonoBehaviour
 
     private void Move(Vector2 inputAxis)
     {
-        bool isClimbing = _stance == PlayerStance.Climb;
         bool isStanding = _stance == PlayerStance.Stand;
-        bool isCrouching =  _stance == PlayerStance.Crouch;
-        Vector3 moveDirection = Vector3.zero;
+        bool isClimbing = _stance == PlayerStance.Climb;
+        bool isCrouching = _stance == PlayerStance.Crouch;
 
         if (isStanding || isCrouching)
         {
-            Vector3 currentVelocity = new Vector3(_rigidbody.linearVelocity.x, 0f, _rigidbody.linearVelocity.z);
-            _animator.SetFloat("velocity", currentVelocity.magnitude * inputAxis.magnitude);
-            _animator.SetFloat("velocityX", currentVelocity.magnitude * inputAxis.x);
-            _animator.SetFloat("velocityZ", currentVelocity.magnitude * inputAxis.y);
-                
+            Vector3 currentVelocity = _rigidbody.linearVelocity;
+            Vector3 currentHorizontal = new Vector3(_rigidbody.linearVelocity.x, 0f, _rigidbody.linearVelocity.z);
+            Vector3 velocity = Vector3.zero;
+
+            _animator.SetFloat("velocity", currentHorizontal.magnitude * inputAxis.magnitude);
+            _animator.SetFloat("velocityX", currentHorizontal.magnitude * inputAxis.x);
+            _animator.SetFloat("velocityZ", currentHorizontal.magnitude * inputAxis.y);
+
             switch (_cameraManager.State)
             {
                 case CameraState.ThirdPerson:
-                    if (inputAxis.magnitude >= 0.1f)
+
+                    float targetAngle = Mathf.Atan2(inputAxis.x, inputAxis.y) * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
+
+                    if (inputAxis.magnitude > 0.01f)
                     {
-                        float targetAngle = Mathf.Atan2(inputAxis.x, inputAxis.y) * Mathf.Rad2Deg +
-                                            _cameraTransform.eulerAngles.y;
-                        float smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref _rotationSmoothVelocity, _rotationSmoothTime);
-                        
-                        transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
-                        
-                        Vector3 velocity = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward * _speed;
-                        _rigidbody.AddForce(velocity * Time.fixedDeltaTime);
+                        RotateTowards(targetAngle, _rotationSmoothTime, ref _rotationSmoothVelocity);
+                        velocity = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward * _speed;
                     }
+                    else velocity = Vector3.zero;
+
+                    _rigidbody.linearVelocity = new Vector3(velocity.x, currentVelocity.y, velocity.z);
+
                     break;
-                
+
                 case CameraState.FirstPerson:
                     if (inputAxis.magnitude >= 0.1f)
                     {
-                        Vector3 verticalDirection = inputAxis.y * transform.forward;
-                        Vector3 horizontalDirection = inputAxis.x * transform.right;
-                        
-                        moveDirection = verticalDirection + horizontalDirection;
-                        Vector3 velocity = moveDirection * _speed;
-                        
-                        _rigidbody.AddForce(velocity * Time.fixedDeltaTime);
+                        Vector3 direction = (inputAxis.x * transform.right) + (inputAxis.y * transform.forward).normalized;
+                        velocity = direction * _speed;
                     }
+                    else velocity = Vector3.zero;
+
+                    _rigidbody.linearVelocity = new Vector3(velocity.x, currentVelocity.y, velocity.z);
+
                     break;
             }
 
@@ -183,9 +184,14 @@ public class PlayerMovement : MonoBehaviour
         {
             Vector3 horizontal = inputAxis.x * transform.right;
             Vector3 vertical = inputAxis.y * transform.up;
-            moveDirection = horizontal + vertical;
-            _rigidbody.AddForce(moveDirection * Time.deltaTime * _climbSpeed);
+            _rigidbody.linearVelocity = (horizontal + vertical).normalized * _climbSpeed;
         }
+    }
+
+    private void RotateTowards(float targetAngle, float rotationSpeed, ref float smoothRotationVelocity)
+    {
+        float smoothAngle = Mathf.SmoothDampAngle(_rigidbody.transform.eulerAngles.y, targetAngle, ref smoothRotationVelocity, rotationSpeed);
+        _rigidbody.MoveRotation(Quaternion.Euler(0f, smoothAngle, 0f));
     }
 
     private void Sprint(bool isSprinting)
