@@ -10,6 +10,7 @@ public class InputManager : MonoBehaviour
     public Action OnClimbInput;
     public Action OnCancelClimbInput;
     public Action OnSwitchCameraInput;
+    public Action OnCrouchInput;
 
     private InputAction _moveAction;
     private InputAction _sprintAction;
@@ -17,6 +18,7 @@ public class InputManager : MonoBehaviour
     private InputAction _climbAction;
     private InputAction _cancelClimbAction;
     private InputAction _switchCameraAction;
+    private InputAction _crouchAction;
 
     private void Start()
     {
@@ -35,6 +37,9 @@ public class InputManager : MonoBehaviour
 
             _switchCameraAction = InputSystem.actions.FindAction("Player/SwitchCamera");
             _switchCameraAction.Enable();
+
+            _crouchAction = InputSystem.actions.FindAction("Player/Crouch");
+            _crouchAction.Enable();
         }
     }
 
@@ -46,6 +51,7 @@ public class InputManager : MonoBehaviour
         CheckClimbInput();
         CheckCancelClimbInput();
         CheckSwitchCameraInput();
+        CheckCrouchInput();
     }
 
     private void CheckMovementInput()
@@ -82,5 +88,11 @@ public class InputManager : MonoBehaviour
     {
         bool isSwitchCameraInputPerformed = _switchCameraAction.WasPerformedThisFrame();
         if (isSwitchCameraInputPerformed) OnSwitchCameraInput?.Invoke();
+    }
+
+    private void CheckCrouchInput()
+    {
+        bool isCrouchActionPerformed = _crouchAction.WasPerformedThisFrame();
+        if (isCrouchActionPerformed) OnCrouchInput?.Invoke();
     }
 }

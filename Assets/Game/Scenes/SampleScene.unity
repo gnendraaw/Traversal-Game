@@ -350,7 +350,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 209116915}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.13454822, y: 1.208847e-15, z: -1.018769e-16, w: 0.9909071}
+  m_LocalRotation: {x: 0.13147415, y: -1.0565811e-15, z: -5.8174784e-16, w: 0.9913196}
   m_LocalPosition: {x: 13.08, y: 2, z: 24.74}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -379,7 +379,7 @@ MonoBehaviour:
       Size: {x: 0.8, y: 0.8}
       Offset: {x: 0, y: 0}
   CenterOnActivate: 1
-  TargetOffset: {x: 0, y: 1.17, z: 0}
+  TargetOffset: {x: 0, y: 1.19, z: 0}
   Damping: {x: 0.5, y: 0.5}
   Lookahead:
     Enabled: 0
@@ -543,7 +543,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.13454825, y: 1.2174603e-15, z: -1.6531027e-16, w: 0.9909071}
+  m_LocalRotation: {x: 0.13147417, y: -1.1540345e-15, z: 1.530543e-16, w: 0.9913196}
   m_LocalPosition: {x: 13.08, y: 2, z: 24.74}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1015,7 +1015,7 @@ MonoBehaviour:
     Value: 0
     Center: 0
     Range: {x: -180, y: 180}
-    Wrap: 0
+    Wrap: 1
     Recentering:
       Enabled: 0
       Wait: 0
@@ -1869,6 +1869,7 @@ GameObject:
   - component: {fileID: 919132148556680941}
   - component: {fileID: 919132148556680943}
   - component: {fileID: 919132148556680942}
+  - component: {fileID: 919132148556680944}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -1893,7 +1894,7 @@ MonoBehaviour:
   _input: {fileID: 166451018}
   _sprintSpeed: 600
   _walkSprintTransition: 30
-  _walkSpeed: 350
+  _walkSpeed: 400
   _jumpForce: 10000
   _rotationSmoothTime: 0.1
   _groundDetector: {fileID: 1701759408}
@@ -1902,6 +1903,7 @@ MonoBehaviour:
     m_Bits: 8
   _groundCheckRadius: 0.1
   _upperStepOffset: {x: 0, y: 0.3, z: 0.3}
+  _maxStepHeight: 0
   _stepCheckDistance: 0.1
   _stepForce: 400
   _climbSpeed: 30
@@ -1911,6 +1913,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   _climbOffset: {x: 0, y: 0, z: 0.16}
+  _crouchSpeed: 350
 --- !u!136 &919132148556680942
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1961,6 +1964,28 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!95 &919132148556680944
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132148556680940}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: a8a20f0783972494f899974e5ff2b6a6, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!4 &1031632034744462859
 Transform:
   m_ObjectHideFlags: 0

@@ -1,8 +1,11 @@
+using System;
 using UnityEngine;
 using Unity.Cinemachine;
 
 public class CameraManager : MonoBehaviour
 {
+    public Action OnPerspectiveChanged;
+
     public CameraState State = CameraState.ThirdPerson;
 
     [Header("Input")]
@@ -23,6 +26,8 @@ public class CameraManager : MonoBehaviour
 
         _fpsCamera.gameObject.SetActive(InFirstPersonView());
         _tpsCamera.gameObject.SetActive(!InFirstPersonView());
+
+        OnPerspectiveChanged?.Invoke();
     }
 
     private bool InFirstPersonView() => State == CameraState.FirstPerson;
