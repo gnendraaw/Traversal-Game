@@ -56,9 +56,17 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _minGlideRotationX;
     [SerializeField] private float _maxGlideRotationX;
 
+    [Header("Punch Detection")]
+    [SerializeField] private Transform _hitDetector;
+    [SerializeField] private float _hitDetectorRadius;
+    [SerializeField] private LayerMask _hitLayer;
+
     private float _speed;
     private float _rotationSmoothVelocity;
     private bool _isGrounded;
+
+    private bool _isPunching;
+    private int _combo = 0;
 
     private void Awake()
     {
@@ -80,13 +88,13 @@ public class PlayerMovement : MonoBehaviour
         _input.OnCrouchInput += Crouch;
         _input.OnGlideInput += StartGlide;
         _input.OnCancelGlideInput += CancelGlide;
+        _input.OnAttackInput += Punch;
 
         _cameraManager.OnPerspectiveChanged += ChangePerspective;
     }
 
     private void FixedUpdate()
     {
-        // CheckStep();
         Move(_cachedMoveInput);
         CheckIsGrounded();
         SyncBodyRotateWithCamera();
@@ -146,6 +154,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void Move(Vector2 inputAxis)
     {
+        if (_isPunching) return;
+
         bool isStanding = _stance == PlayerStance.Stand;
         bool isClimbing = _stance == PlayerStance.Climb;
         bool isCrouching = _stance == PlayerStance.Crouch;
@@ -350,6 +360,37 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    private void Punch()
+    {
+        if (!_isPunching && _stance == PlayerStance.Stand)
+        {
+            _isPunching = true;
+
+            _combo += 1;
+            if (_combo > 3) _combo = 1;
+
+            _animator.SetInteger("combo", _combo);
+            _animator.SetTrigger("punch");
+        }
+    }
+
+    // INFO: Called by the attack animation event.
+    private void EndPunch()
+    {
+        _isPunching = false;
+    }
+
+    private void Hit()
+    {
+        Collider[] hitObjects = Physics.OverlapSphere(_hitDetector.position, _hitDetectorRadius, _hitLayer);
+
+        for (int i = 0; i < hitObjects.Length; i++)
+        {
+            if (hitObjects[i] == null) continue;
+            Destroy(hitObjects[i].gameObject);
+        }
+    }
+
     private void OnDestroy()
     {
         _input.OnMoveInput -= HandleMoveInput;
@@ -360,6 +401,7 @@ public class PlayerMovement : MonoBehaviour
         _input.OnCrouchInput -= Crouch;
         _input.OnGlideInput -= StartGlide;
         _input.OnCancelGlideInput -= CancelGlide;
+        _input.OnAttackInput -= Punch;
 
         _cameraManager.OnPerspectiveChanged -= ChangePerspective;
     }

@@ -13,6 +13,7 @@ public class InputManager : MonoBehaviour
     public Action OnCrouchInput;
     public Action OnGlideInput;
     public Action OnCancelGlideInput;
+    public Action OnAttackInput;
 
     private InputAction _moveAction;
     private InputAction _sprintAction;
@@ -23,6 +24,7 @@ public class InputManager : MonoBehaviour
     private InputAction _crouchAction;
     private InputAction _glideAction;
     private InputAction _cancelGlideAction;
+    private InputAction _attackAction;
 
     private void Start()
     {
@@ -55,6 +57,9 @@ public class InputManager : MonoBehaviour
 
             _cancelGlideAction = InputSystem.actions.FindAction("Player/CancelGlide");
             _cancelGlideAction.Enable();
+
+            _attackAction = InputSystem.actions.FindAction("Player/Attack");
+            _attackAction.Enable();
         }
     }
 
@@ -69,6 +74,7 @@ public class InputManager : MonoBehaviour
         CheckCrouchInput();
         CheckGlideInput();
         CheckCancelGlideInput();
+        CheckAttackInput();
     }
 
     private void CheckMovementInput()
@@ -123,5 +129,11 @@ public class InputManager : MonoBehaviour
     {
         bool isCancelGlideActionPerformed = _cancelGlideAction.WasPerformedThisFrame();
         if (isCancelGlideActionPerformed) OnCancelGlideInput?.Invoke();
+    }
+
+    private void CheckAttackInput()
+    {
+        bool isAttackActionPerformed = _attackAction.WasPerformedThisFrame();
+        if (isAttackActionPerformed) OnAttackInput?.Invoke();
     }
 }
