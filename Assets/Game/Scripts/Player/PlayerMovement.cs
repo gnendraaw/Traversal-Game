@@ -118,15 +118,20 @@ public class PlayerMovement : MonoBehaviour
     private void CheckStep()
     {
         bool notMoving = _cachedMoveInput.sqrMagnitude <= 0.01f;
+
         if (notMoving) return;
         Vector3 lowerRayOrigin = _groundDetector.position;
         Vector3 upperRayOrigin = _groundDetector.position + _upperStepOffset;
         Vector3 forwardDirection = transform.forward;
+
         if (!Physics.Raycast(lowerRayOrigin, forwardDirection, out RaycastHit hit, _stepCheckDistance)) return;
         if (Physics.Raycast(upperRayOrigin, forwardDirection, _stepCheckDistance)) return;
+
         Vector3 downRayOrigin = upperRayOrigin + (forwardDirection * _stepCheckDistance);
         if (!Physics.Raycast(downRayOrigin, Vector3.down, _upperStepOffset.y)) return;
+
         float stepHeightDifference = hit.point.y - lowerRayOrigin.y;
+
         Vector3 targetPosition = _rigidbody.position + new Vector3(0f, stepHeightDifference + 0.1f, 0f);
         _rigidbody.MovePosition(targetPosition);
     }
@@ -216,9 +221,11 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!_isGrounded) return;
 
-        Vector3 jumpDirection = Vector3.up;
+        Vector3 velocity = Vector3.up * _jumpForce;
+        Vector3 currentVelocity = _rigidbody.linearVelocity;
+        _rigidbody.linearVelocity = new Vector3(currentVelocity.x, velocity.y, currentVelocity.z);
+
         _animator.SetTrigger("jump");
-        _rigidbody.AddForce(jumpDirection * _jumpForce * Time.deltaTime);
     }
 
     private void StartClimb()
@@ -254,24 +261,24 @@ public class PlayerMovement : MonoBehaviour
     {
         if (_stance == PlayerStance.Stand)
         {
+            _animator.SetBool("isCrouch", true);
+
             _stance = PlayerStance.Crouch;
             _speed = _crouchSpeed;
-            _animator.SetBool("isCrouch", true);
 
             _capsuleCollider.height = 1.3f;
             _capsuleCollider.center = Vector3.up * 0.66f;
-
-            return;
         }
 
         if (_stance == PlayerStance.Crouch)
         {
-            _stance = PlayerStance.Stand;
-            _speed = _walkSpeed;
             _animator.SetBool("isCrouch", false);
 
+            _stance = PlayerStance.Stand;
+            _speed = _walkSpeed;
+
             _capsuleCollider.height = 1.8f;
-            _capsuleCollider.center = Vector3.up * 0.99f;
+            _capsuleCollider.center = Vector3.up * 0.9f;
         }
     }
 
