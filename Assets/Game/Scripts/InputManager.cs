@@ -11,6 +11,8 @@ public class InputManager : MonoBehaviour
     public Action OnCancelClimbInput;
     public Action OnSwitchCameraInput;
     public Action OnCrouchInput;
+    public Action OnGlideInput;
+    public Action OnCancelGlideInput;
 
     private InputAction _moveAction;
     private InputAction _sprintAction;
@@ -19,6 +21,8 @@ public class InputManager : MonoBehaviour
     private InputAction _cancelClimbAction;
     private InputAction _switchCameraAction;
     private InputAction _crouchAction;
+    private InputAction _glideAction;
+    private InputAction _cancelGlideAction;
 
     private void Start()
     {
@@ -26,12 +30,16 @@ public class InputManager : MonoBehaviour
         {
             _moveAction = InputSystem.actions.FindAction("Player/Move");
             _moveAction.Enable();
+
             _sprintAction = InputSystem.actions.FindAction("Player/Sprint");
             _sprintAction.Enable();
+
             _jumpAction = InputSystem.actions.FindAction("Player/Jump");
             _jumpAction.Enable();
+
             _climbAction = InputSystem.actions.FindAction("Player/Climb");
             _climbAction.Enable();
+
             _cancelClimbAction = InputSystem.actions.FindAction("Player/CancelClimb");
             _cancelClimbAction.Enable();
 
@@ -40,6 +48,13 @@ public class InputManager : MonoBehaviour
 
             _crouchAction = InputSystem.actions.FindAction("Player/Crouch");
             _crouchAction.Enable();
+
+
+            _glideAction = InputSystem.actions.FindAction("Player/Glide");
+            _glideAction.Enable();
+
+            _cancelGlideAction = InputSystem.actions.FindAction("Player/CancelGlide");
+            _cancelGlideAction.Enable();
         }
     }
 
@@ -52,6 +67,8 @@ public class InputManager : MonoBehaviour
         CheckCancelClimbInput();
         CheckSwitchCameraInput();
         CheckCrouchInput();
+        CheckGlideInput();
+        CheckCancelGlideInput();
     }
 
     private void CheckMovementInput()
@@ -94,5 +111,17 @@ public class InputManager : MonoBehaviour
     {
         bool isCrouchActionPerformed = _crouchAction.WasPerformedThisFrame();
         if (isCrouchActionPerformed) OnCrouchInput?.Invoke();
+    }
+
+    private void CheckGlideInput()
+    {
+        bool isGlideActionPerformed = _glideAction.WasPerformedThisFrame();
+        if (isGlideActionPerformed) OnGlideInput?.Invoke();
+    }
+
+    private void CheckCancelGlideInput()
+    {
+        bool isCancelGlideActionPerformed = _cancelGlideAction.WasPerformedThisFrame();
+        if (isCancelGlideActionPerformed) OnCancelGlideInput?.Invoke();
     }
 }
