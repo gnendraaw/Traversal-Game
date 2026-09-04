@@ -9,6 +9,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private CameraManager _cameraManager;
     [Header("Inputs")][SerializeField] private InputManager _input;
 
+    [Header("Audio")]
+    [SerializeField] private PlayerAudioManager _audioManager;
+
     [Header("Walk & Sprint")]
     [SerializeField]
     private float _sprintSpeed;
@@ -336,6 +339,7 @@ public class PlayerMovement : MonoBehaviour
         {
             _stance = PlayerStance.Glide;
             _animator.SetBool("isGliding", true);
+            _audioManager.PlayGlideSFX();
         }
     }
 
@@ -357,6 +361,7 @@ public class PlayerMovement : MonoBehaviour
         {
             _stance = PlayerStance.Stand;
             _animator.SetBool("isGliding", false);
+            _audioManager.StopGlideSFX();
         }
     }
 
