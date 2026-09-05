@@ -2604,8 +2604,10 @@ MonoBehaviour:
   _input: {fileID: 166451018}
   _audioManager: {fileID: 919132148556680945}
   _sprintSpeed: 6
+  _walkSpeed: 3
+  _acceleration: 6
+  _deceleration: 10
   _walkSprintTransition: 30
-  _walkSpeed: 2
   _jumpForce: 5
   _rotationSmoothTime: 0.1
   _groundDetector: {fileID: 1701759408}
